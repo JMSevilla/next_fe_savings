@@ -16,11 +16,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { requiredString } from "../utils/form-schema";
 import { usePreviousValue } from "../utils/hooks/previousValue";
-import { gitlabProvinces, buildRequestHandler } from "./api/http";
 import NextPreviousButton from "../components/Button/NextPreviousButton";
 import { PrimaryButton } from "../components/Button/PrimaryButton";
-import { buildRequest } from "./api/http";
-import http from "./api/http";
+import { BSBAPI, gitlabProvinces } from "./api/http";
 import Systembackdrop from "../components/Backdrop/Backdrop";
 import Login from "./Login";
 interface TabPanelProps {
@@ -46,6 +44,7 @@ const TabPanel: React.FC<TabPanelProps> = (props) => {
 const baseSchema = z.object({
   firstName: requiredString("Your firstname is required."),
   lastName: requiredString("Your lastname is required."),
+  middleName: requiredString("Your middlename is required."),
   province: requiredString("Your province is required"),
   cities: requiredString("Your city is required"),
   zipcode: requiredString("Your zip code is required"),
@@ -139,27 +138,25 @@ const Home: React.FC<Props> = ({ onSubmit }) => {
   });
   const handleSubmit = () => {
     const values = getValues();
-    var formdata = new FormData();
-    formdata.append("firstname", values.firstName);
-    formdata.append("lastname", values.lastName);
-    formdata.append("province", values.province);
-    formdata.append("city", values.cities);
-    formdata.append("zipcode", values.zipcode);
-    formdata.append("address", values.address);
-    formdata.append("account_type", values.accountType);
-    formdata.append("deposit_amount", values.amount);
-    formdata.append("mobile_number", values.mobile_number);
-    formdata.append("email", values.email);
-    formdata.append("password", values.password);
+    const obj = {
+      firstname : values.firstName,
+      lastname : values.lastName,
+      middlename : values.middleName,
+      province: values.province,
+      city: values.cities,
+      zipcode: values.zipcode,
+      address : values.address,
+      account_type: values.accountType,
+      deposit_amount: values.amount,
+      mobile_number: values.mobile_number,
+      email: values.email,
+      password: values.password
+    }
     setOpen(!open);
-    const requestConfig = {
-      concat: "/api/clients/open-account",
-      requestOptions: {
-        method: "POST",
-        body: formdata,
-      },
-    };
-    buildRequest(requestConfig).then((res: any) => console.log(res));
+    const request = BSBAPI.post(`/api/Client/open-account`, obj)
+    request.then((res : any) => {
+      console.log(res)
+    })
   };
   const hasNoMiddleName = watch("hasNoMiddleName");
   const hasNoMiddleNamePrevValue = usePreviousValue(hasNoMiddleName);
